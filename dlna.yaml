@@ -16,7 +16,35 @@ wifi:
 
 logger:
 
-# I2S 音频输出 PCM5102
+i2c:
+  sda: 17
+  scl: 18
+  scan: true
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    id: oled_screen
+    lambda: |-
+      it.print(0, 0, id(font_small), "DLNA Receiver");
+      if (id(dlna_renderer).state == media_player::MEDIA_PLAYER_STATE_PLAYING) {
+        it.print(0, 16, id(font_small), "Playing");
+      } else {
+        it.print(0, 16, id(font_small), "Stopped");
+      }
+      if (id(wifi).is_connected()) {
+        it.print(0, 32, id(font_small), "WiFi: OK");
+      } else {
+        it.print(0, 32, id(font_small), "WiFi: Disconnect");
+      }
+
+font:
+  - file: "gfonts://Roboto"
+    id: font_small
+    size: 10
+
+# I2S音频输出 PCM5102A
 audio_i2s:
   - id: i2s_out
     bck_pin: 42
@@ -31,34 +59,5 @@ media_player:
     name: "DLNA音乐接收器"
     audio_out: i2s_out
 
-# OLED I2C总线
-i2c:
-  - id: bus_oled
-    sda: 16
-    scl: 17
-    scan: true
+captive_portal:
 
-# SSD1306 128*64 OLED
-display:
-  - platform: ssd1306_i2c
-    id: oled_screen
-    i2c_id: bus_oled
-    width: 128
-    height: 64
-    rotation: 0
-    lambda: |-
-      it.print(0, 0, id(mono), "DLNA AUDIO");
-      if (id(dlna_renderer).state == media_player::MEDIA_PLAYER_STATE_PLAYING) {
-        it.print(0, 16, id(mono), "> Playing");
-      } else {
-        it.print(0, 16, id(mono), "| Stopped");
-      }
-      it.print(0, 32, id(mono), "SSID: ");
-      it.print(40, 32, id(mono), id(wifi).get_ssid());
-      it.print(0, 48, id(mono), "IP: ");
-      it.print(24, 48, id(mono), id(wifi).get_ip_address());
-
-font:
-  - file: "gfonts://Roboto"
-    id: mono
-    size: 10
