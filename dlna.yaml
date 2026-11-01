@@ -1,0 +1,64 @@
+esphome:
+  name: dlna-pcm5102
+  friendly_name: DLNA音频接收器
+
+esp32:
+  board: esp32s3-devkitc-1-n16r8
+  framework:
+    type: esp-idf
+
+wifi:
+  ssid: "DLNA"
+  password: "13665438127"
+  ap:
+    ssid: "DLNA-PCM5102-SETUP"
+    password: "12345678"
+
+logger:
+
+# I2S 音频输出 PCM5102
+audio_i2s:
+  - id: i2s_out
+    bck_pin: 42
+    ws_pin: 38
+    dout_pin: 40
+    sample_rate: 44100
+    bits_per_sample: 16
+
+media_player:
+  - platform: dlna
+    id: dlna_renderer
+    name: "DLNA音乐接收器"
+    audio_out: i2s_out
+
+# OLED I2C总线
+i2c:
+  - id: bus_oled
+    sda: 16
+    scl: 17
+    scan: true
+
+# SSD1306 128*64 OLED
+display:
+  - platform: ssd1306_i2c
+    id: oled_screen
+    i2c_id: bus_oled
+    width: 128
+    height: 64
+    rotation: 0
+    lambda: |-
+      it.print(0, 0, id(mono), "DLNA AUDIO");
+      if (id(dlna_renderer).state == media_player::MEDIA_PLAYER_STATE_PLAYING) {
+        it.print(0, 16, id(mono), "> Playing");
+      } else {
+        it.print(0, 16, id(mono), "| Stopped");
+      }
+      it.print(0, 32, id(mono), "SSID: ");
+      it.print(40, 32, id(mono), id(wifi).get_ssid());
+      it.print(0, 48, id(mono), "IP: ");
+      it.print(24, 48, id(mono), id(wifi).get_ip_address());
+
+font:
+  - file: "gfonts://Roboto"
+    id: mono
+    size: 10
