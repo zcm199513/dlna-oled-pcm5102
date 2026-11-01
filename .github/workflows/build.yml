@@ -1,0 +1,19 @@
+name: Build ESPHome firmware
+on:
+  push:
+    paths:
+      - '*.yaml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build firmware
+        uses: esphome/build-action@v1
+        with:
+          yaml_file: dlna.yaml
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: dlna-firmware
+          path: ./.esphome/build/dlna-pcm5102/.pioenvs/dlna-pcm5102/firmware.bin
